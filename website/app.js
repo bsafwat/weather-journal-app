@@ -17,7 +17,8 @@ const apiKey = 'appid=467cdc0273a13eefe43d0ca35ff041f2';
 const baseUrl = 'http://api.openweathermap.org/data/2.5/weather?';
 const units = 'units=metric&';
 const apiKey = 'appid=467cdc0273a13eefe43d0ca35ff041f2';
-
+let lastEpochApiFetch = 100;
+let lastZipUsed = '00000';
 // let apiWeatherData = {date: "01.01.2021", temperature: 0, feelings: "a" };
 
 // Create a new date instance dynamically with JS
@@ -33,6 +34,14 @@ const getWeatherData = async (url) => {
 	const response = await fetch(url);    
     try {
         const allData = await response.json();
+
+        // check fetched data
+        /*
+        if (allData.cod !== 200) {
+            alert(`Error: ${allData.message}`);
+        }
+        */
+
         console.log(allData);
         console.log(`main: ${allData.main.temp}`);
         console.log(`time in ms: ${allData.dt}`);
@@ -41,6 +50,9 @@ const getWeatherData = async (url) => {
         apiWeatherData.date = newDate;
         apiWeatherData.temperature = allData.main.temp;
         apiWeatherData.feelings = document.getElementById('feelings').value;
+        apiWeatherData.time = allData.dt;  // time in ms
+        lastEpochApiFetch = allData.dt;
+        lastZipUsed = document.getElementById('zip').value;
         console.log(`weather data is: ${apiWeatherData.temperature}`);
         console.log('returned date from get will be:' , apiWeatherData);
         // check ??
@@ -92,6 +104,9 @@ const displayWeather = async (days) => {
     }
   }
 
+const useUpdatedFeelings = async () => {
+    document.getElementById('content-value').innerHTML = `${document.getElementById('feelings').value}`;
+}
 
 //store last updated time in the server
 // POST request to server with current time
@@ -99,23 +114,39 @@ const displayWeather = async (days) => {
 function performClickAction(event){
     // validate first
     if (ValidateInput() ) {
-        const zipCode =  'zip=' + document.getElementById('zip').value + ',us&';
-        console.log(`zip code is: ${zipCode}`);
-    
-        const urlString = baseUrl + zipCode + units + apiKey;
-        console.log(`URL is: ${urlString}`);
+
+        if( isMinTimeToFetchElapsed() ) {
+            // fetch
+            console.log("I will fetch !")
+                
+            const zipCode =  'zip=' + document.getElementById('zip').value + ',us&';
+            console.log(`zip code is: ${zipCode}`);
         
-        // cascading promises
-        getWeatherData(urlString)
-        .then ( (fetechData) => {
-                console.log('what passed to me is' , fetechData);
-                updateWeatherData('/updateWeather', fetechData );
-            })
-        .then ( (storedData) => {
-                console.log('stored data passed to me is:' , storedData);
-                displayWeather(1);
-    
+            const urlString = baseUrl + zipCode + units + apiKey;
+            console.log(`URL is: ${urlString}`);
+            
+            // cascading promises
+            getWeatherData(urlString)
+            .then ( (fetechData) => {
+                    console.log('what passed to me is' , fetechData);
+                    updateWeatherData('/updateWeather', fetechData );
+                })
+            .then ( (storedData) => {
+                    console.log('stored data passed to me is:' , storedData);
+                    displayWeather(1);
+        
+                });
+        } else {
+            // get last fetched data
+            console.log("Got last data");
+            displayWeather(1).then ( () => {
+                useUpdatedFeelings();
             });
+             
+            
+        }
+        
+
     }
 }
 
@@ -193,4 +224,20 @@ function cleanUpErrorMessages() {
         document.getElementById('feelings-error').remove();
     }
     isErrorMessageDisplayed = false;
+}
+
+// Check if min 10 min elapsed since last API fetch 
+// to comply with Open Weather Map's constraint
+function isMinTimeToFetchElapsed() {
+    const minTimeToFetch = 600000;   // 10 min in milli-sec
+
+    let d = new Date();
+    const currentEpochTime = d.getTime();
+
+    if ( (currentEpochTime - (lastEpochApiFetch * 1000) ) > minTimeToFetch ||
+            lastZipUsed !== document.getElementById('zip').value ) {
+        return true;
+    } else { 
+        return false
+    }
 }
