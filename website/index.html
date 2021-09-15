@@ -8,27 +8,65 @@
 </head>
  <body>
 <div id = "app">
+
   <div class ="holder headline">
-    Weather Journal App
+    <h1>Weather Journal App</h1>
   </div>
+
   <div class ="holder zip">
     <label for="zip">Enter Zipcode here</label>
     <input type="text" id="zip" placeholder="enter zip code here">
+
+    <!--
+    <select name="cities" id="cities">
+      <option value="Cairo,eg">Cairo, Egypt</option>
+      <option value="London,uk">London, UK</option>
+      <option value="Tokyp,jp">Tokyo, Japan</option>
+      <option value="Newyork,ny,us">New York, USA</option>
+    </select>
+
+    <select name="weather-date" id="weather-date">
+      <option value="today">Today</option>
+      <option value="tomorrow">Tomorrow</option>
+    </select>
+    -->
+  
   </div>
+
   <div class ="holder feel">
     <label for="feelings">How are you feeling today?</label>
-    <textarea class= "myInput" id="feelings" placeholder="Enter your feelings here" rows="9" cols="50"></textarea>
+    <!-- <textarea class= "myInput" id="feelings" placeholder="Enter your feelings here" rows="9" cols="50"></textarea> -->
+    <textarea class= "myInput" id="feelings" placeholder="Enter your feelings here" cols="50"></textarea>
     <button id="generate" type = "submit"> Generate </button>
   </div>
+
   <div class ="holder entry">
     <div class = "title">Most Recent Entry</div>
-   <div id = "entryHolder">
-    <div id = "date"></div> 
-   <div id = "temp"></div>
-   <div id = "content"></div>
+    <div id = "entryHolder">
+      <table>
+        <tr>
+          <td id = "date" class="weather__item"></td>
+          <td id = "date-value"></td>
+        </tr>
+        <tr>
+          <td id = "temp" class="weather__item"></td>
+          <td id = "temp-value"></td>
+        </tr>
+        <tr>
+          <td id = "content" class="weather__item"></td>
+          <td id = "content-value"></td>
+        </tr>
+      </table>
+      <!--
+      <div id = "date"></div> 
+      <div id = "temp"></div>
+      <div id = "content"></div>
+      -->
+    </div>
   </div>
-  </div>
-  </div>
+
+</div>
+
 <script src="app.js" type="text/javascript"></script>
 
 </body>
