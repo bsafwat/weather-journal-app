@@ -91,9 +91,35 @@ const displayWeather = async (days) => {
     }
   }
 
+
+//store last updated time in the server
+// POST request to server with current time
+
+function performClickAction(event){
+	const zipCode =  'zip=' + document.getElementById('zip').value + ',us&';
+	console.log(`zip code is: ${zipCode}`);
+
+	const urlString = baseUrl + zipCode + units + apiKey;
+	console.log(`URL is: ${urlString}`);
+
+	getWeatherData(urlString)
+	.then ( (fetechData) => {
+			console.log('what passed to me is' , fetechData);
+			updateWeatherData('/updateWeather', fetechData );
+		})
+	.then ( (storedData) => {
+			console.log('stored data passed to me is:' , storedData);
+			displayWeather(1);
+
+		});
+	
+}
+
+const generateButton = document.getElementById('generate');
+generateButton.addEventListener('click', performClickAction );
+
+
   /**
-   * 
-   */
   // const zipCode =  'zip=' + document.getElementById('zip').value + ',us&';
   const zipCode =  'zip=' + '94040' + ',us&';
   console.log(`zip code is: ${zipCode}`);
@@ -105,3 +131,5 @@ const displayWeather = async (days) => {
   displayWeather(1);
   fetechData = {date: "07.09.2021", temperature: 17, feelings: "cold" };
   updateWeatherData('/updateWeather', fetechData );
+
+  */
