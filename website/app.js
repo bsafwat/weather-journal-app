@@ -19,6 +19,7 @@ const units = 'units=metric&';
 const apiKey = 'appid=467cdc0273a13eefe43d0ca35ff041f2';
 let lastEpochApiFetch = 100;
 let lastZipUsed = '00000';
+let fetchError = '';
 // let apiWeatherData = {date: "01.01.2021", temperature: 0, feelings: "a" };
 
 // Create a new date instance dynamically with JS
@@ -36,11 +37,14 @@ const getWeatherData = async (url) => {
         const allData = await response.json();
 
         // check fetched data
-        /*
+        
         if (allData.cod !== 200) {
-            alert(`Error: ${allData.message}`);
+            // alert(`Error: ${allData.message}`);
+            fetchError = `${allData.message}`;
+            return undefined;
+            // throw new Error(`myError: ${allData.message}`);
         }
-        */
+        
 
         console.log(allData);
         console.log(`main: ${allData.main.temp}`);
@@ -59,7 +63,7 @@ const getWeatherData = async (url) => {
         // return allData;
         return apiWeatherData;
     } catch(error) {
-        console.log("Error", error)
+        console.log("catchError", error)
     }
 }
 
@@ -128,13 +132,30 @@ function performClickAction(event){
             // cascading promises
             getWeatherData(urlString)
             .then ( (fetechData) => {
+                    if(! fetechData ) {
+                        // throw new Error(`myError: ${allData.message}`);
+                        throw new Error(`${fetchError}`);
+                    }
                     console.log('what passed to me is' , fetechData);
                     updateWeatherData('/updateWeather', fetechData );
                 })
             .then ( (storedData) => {
                     console.log('stored data passed to me is:' , storedData);
                     displayWeather(1);
-        
+                })
+            .catch((error) => {
+                    console.log('Chain broken in normal console!');
+                    console.log(`${error}`);
+                    console.error('Chain broken on std-err!');
+
+                    if( error.toString() === 'Error: city not found' ) {
+                        const zipElement = document.getElementById('zip');
+                        const elementsWithError = [];
+                        elementsWithError.push(zipElement);
+                        displayErrorMessage(elementsWithError);
+                    }
+                    
+                    
                 });
         } else {
             // get last fetched data
