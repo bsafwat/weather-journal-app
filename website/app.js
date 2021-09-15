@@ -26,6 +26,7 @@ let currentTime = d.getTime();
 let newDate = d.getDate() +'.'+ (d.getMonth() + 1) +'.'+ d.getFullYear();
 console.log(`Current date: ${newDate}`);
 
+let isErrorMessageDisplayed = false;
 
 const getWeatherData = async (url) => {
 
@@ -96,40 +97,100 @@ const displayWeather = async (days) => {
 // POST request to server with current time
 
 function performClickAction(event){
-	const zipCode =  'zip=' + document.getElementById('zip').value + ',us&';
-	console.log(`zip code is: ${zipCode}`);
-
-	const urlString = baseUrl + zipCode + units + apiKey;
-	console.log(`URL is: ${urlString}`);
-
-	getWeatherData(urlString)
-	.then ( (fetechData) => {
-			console.log('what passed to me is' , fetechData);
-			updateWeatherData('/updateWeather', fetechData );
-		})
-	.then ( (storedData) => {
-			console.log('stored data passed to me is:' , storedData);
-			displayWeather(1);
-
-		});
-	
+    // validate first
+    if (ValidateInput() ) {
+        const zipCode =  'zip=' + document.getElementById('zip').value + ',us&';
+        console.log(`zip code is: ${zipCode}`);
+    
+        const urlString = baseUrl + zipCode + units + apiKey;
+        console.log(`URL is: ${urlString}`);
+        
+        // cascading promises
+        getWeatherData(urlString)
+        .then ( (fetechData) => {
+                console.log('what passed to me is' , fetechData);
+                updateWeatherData('/updateWeather', fetechData );
+            })
+        .then ( (storedData) => {
+                console.log('stored data passed to me is:' , storedData);
+                displayWeather(1);
+    
+            });
+    }
 }
 
 const generateButton = document.getElementById('generate');
 generateButton.addEventListener('click', performClickAction );
 
 
-  /**
-  // const zipCode =  'zip=' + document.getElementById('zip').value + ',us&';
-  const zipCode =  'zip=' + '94040' + ',us&';
-  console.log(`zip code is: ${zipCode}`);
-  const urlString = baseUrl + zipCode + units + apiKey;
-  console.log(`URL is: ${urlString}`);
-  
-  getWeatherData(urlString);
+function  ValidateInput(){
+    let invalidInput = false;
+    const elementsWithError = [];
 
-  displayWeather(1);
-  fetechData = {date: "07.09.2021", temperature: 17, feelings: "cold" };
-  updateWeatherData('/updateWeather', fetechData );
+    if( isErrorMessageDisplayed ){
+        cleanUpErrorMessages();
+    }
 
-  */
+    const zipElement = document.getElementById('zip');
+    // const zipCode =  document.getElementById('zip').value;
+    const zipCode =  zipElement.value;
+    
+    if (zipCode.length < 5) {       //empty or short 
+        // alert('please enter a ZIP code');
+        // displayErrorMessage(zipElement);
+        invalidInput = true;
+        elementsWithError.push(zipElement);
+        // return false;
+    }
+    
+    // const feelings = document.getElementById('feelings').value;
+    const feelingsElement = document.getElementById('feelings');
+    const feelings =  feelingsElement.value;
+    if (feelings.length < 1) {
+        //  alert('please enter your feelings today');
+        // displayErrorMessage(feelings);
+        // return false;
+        invalidInput = true;
+        elementsWithError.push(feelingsElement);
+    }
+    
+    if (invalidInput) {
+        displayErrorMessage(elementsWithError);
+        return false;
+    } else return true;
+}
+
+// function displayErrorMessage(element) {
+function displayErrorMessage(elements) {
+    console.log(elements);
+    for (element of elements) {
+        console.log('element is :', element);
+        element.placeholder = element.placeholder;
+        additionalHelpMessage = '';
+        if(element.id === 'zip'){
+            additionalHelpMessage = `<a href="https://www.unitedstateszipcodes.org/" 
+                                            target="_blank">Check ZIP guide</a>`;
+        }
+        let parentElement = element.parentElement;
+        console.log('parent is :', element.parentElement);
+
+        let newElement = document.createElement('span');
+        newElement.id = `${element.id}-error`;
+        newElement.innerHTML = `* Error: please enter a valid ${element.id} input. ${additionalHelpMessage}`;
+        
+        newElement.className = 'error__message';
+        parentElement.appendChild(newElement);
+
+        isErrorMessageDisplayed = true;
+    }
+}
+
+function cleanUpErrorMessages() {    
+    if ( document.getElementById('zip-error') ) {
+        document.getElementById('zip-error').remove();
+    }
+    if ( document.getElementById('feelings-error') ) {
+        document.getElementById('feelings-error').remove();
+    }
+    isErrorMessageDisplayed = false;
+}
