@@ -47,3 +47,11 @@ function updateWeather(request, response) {
 }
 
 /////
+app.post('/updateWeather', updateWeather);
+
+function updateWeather(request, response) {
+	projectData = request.body;
+	response.send(projectData);
+}
+
+/////
