@@ -37,14 +37,12 @@ const getWeatherData = async (url) => {
         const allData = await response.json();
 
         // check fetched data
-        
         if (allData.cod !== 200) {
             // alert(`Error: ${allData.message}`);
             fetchError = `${allData.message}`;
             return undefined;
             // throw new Error(`myError: ${allData.message}`);
         }
-        
 
         console.log(allData);
         console.log(`main: ${allData.main.temp}`);
@@ -55,6 +53,8 @@ const getWeatherData = async (url) => {
         apiWeatherData.temperature = allData.main.temp;
         apiWeatherData.feelings = document.getElementById('feelings').value;
         apiWeatherData.time = allData.dt;  // time in ms
+        apiWeatherData.tempMax = allData.main.temp_max;
+        apiWeatherData.tempMin = allData.main.temp_min;
         lastEpochApiFetch = allData.dt;
         lastZipUsed = document.getElementById('zip').value;
         console.log(`weather data is: ${apiWeatherData.temperature}`);
@@ -67,6 +67,9 @@ const getWeatherData = async (url) => {
     }
 }
 
+
+//store last updated time in the server
+// POST request to server with current time
 
 const updateWeatherData = async (url, data={} ) => {
 	const response = await fetch( url, {
@@ -85,8 +88,8 @@ const updateWeatherData = async (url, data={} ) => {
         // console.log('within POST: ', responseData.temperature);
         // return newData;
         return data;
-    } catch(err) {
-        console.log(`Error: ${err}`);
+    } catch(error) {
+        console.log(`Error: ${error}`);
     }
 }
 
@@ -112,8 +115,6 @@ const useUpdatedFeelings = async () => {
     document.getElementById('content-value').innerHTML = `${document.getElementById('feelings').value}`;
 }
 
-//store last updated time in the server
-// POST request to server with current time
 
 function performClickAction(event){
     // validate first
@@ -146,7 +147,7 @@ function performClickAction(event){
             .catch((error) => {
                     console.log('Chain broken in normal console!');
                     console.log(`${error}`);
-                    console.error('Chain broken on std-err!');
+                    // console.error('Chain broken on std-err!');
 
                     if( error.toString() === 'Error: city not found' ) {
                         const zipElement = document.getElementById('zip');
@@ -154,8 +155,6 @@ function performClickAction(event){
                         elementsWithError.push(zipElement);
                         displayErrorMessage(elementsWithError);
                     }
-                    
-                    
                 });
         } else {
             // get last fetched data
@@ -163,16 +162,85 @@ function performClickAction(event){
             displayWeather(1).then ( () => {
                 useUpdatedFeelings();
             });
-             
-            
         }
-        
-
     }
 }
 
-const generateButton = document.getElementById('generate');
-generateButton.addEventListener('click', performClickAction );
+// const generateButton = document.getElementById('generate');
+// generateButton.addEventListener('click', performClickAction );
+
+//////-------------------
+
+// const historyButton = document.getElementById('history');
+// historyButton.addEventListener('click', performClickActionHistory );
+
+const actionContainer = document.getElementById('actionContainer');
+actionContainer.addEventListener('click', (event) => {
+    // to capture clicks on buttons only
+    if( event.target.id === 'history' ) {
+        displayHistory();
+    } 
+    if( event.target.id === 'generate' ) {
+        performClickAction();
+    } 
+
+});
+ 
+/*
+function performClickActionHistory (event){
+
+    // to capture clicks on buttons only
+  if( event.target.id === 'history' ) {
+    displayHistory();
+  } 
+    // window.open('/weatherHistory',"","toolbar=no,status=no,menubar=no,location=center,scrollbars=no,resizable=no,height=500,width=657");
+}
+*/
+
+const displayHistory = async (days) => {
+    
+    const response = await fetch('/weatherHistory');
+    try{
+      const historyData = await response.json();
+    
+      let maxTemp = historyData[0].tempMax;
+      let minTemp = historyData[0].tempMin;
+      oldestDate = historyData[0].date;
+      newestDate = historyData[historyData.length-1].date;
+      for( entry of historyData) {
+        maxTemp = getMaxValue(maxTemp, entry.tempMax);
+        minTemp = getMinValue(minTemp, entry.tempMin);
+      }
+      document.getElementById('dateRange').innerHTML = 'Date:';
+      document.getElementById('dateRange-value').innerHTML = `${oldestDate} to ${newestDate}`;
+      document.getElementById('tempMax').innerHTML = 'Max:';
+      // document.getElementById('tempMax-value').innerHTML = `${entry.tempMax}`;
+      document.getElementById('tempMax-value').innerHTML = `${maxTemp}`;
+      document.getElementById('tempMin').innerHTML = 'Min:';
+      // document.getElementById('tempMin-value').innerHTML = `${entry.tempMin}`;
+      document.getElementById('tempMin-value').innerHTML = `${minTemp}`;
+       
+    }catch(error){
+      console.log("error", error);
+    }
+  }
+
+function getMaxValue (firstValue, secondValue) {
+    if(firstValue >= secondValue) {
+        return firstValue;
+    } else { 
+        return secondValue;
+    }
+}
+
+function getMinValue (firstValue, secondValue) {
+    if(firstValue <= secondValue) {
+        return firstValue;
+    } else { 
+        return secondValue;
+    }
+}
+//////-------------------
 
 
 function  ValidateInput(){
@@ -245,6 +313,7 @@ function cleanUpErrorMessages() {
         document.getElementById('feelings-error').remove();
     }
     isErrorMessageDisplayed = false;
+    fetchError = '';
 }
 
 // Check if min 10 min elapsed since last API fetch 
@@ -262,3 +331,24 @@ function isMinTimeToFetchElapsed() {
         return false
     }
 }
+
+
+      /*
+      const htmlString = `
+      <!DOCTYPE html>
+      <html>
+          <head>
+              <meta charset="UTF-8">
+              <title>Weather Journal</title>
+              <link href="https://fonts.googleapis.com/css?family=Oswald:400,600,700|Ranga:400,700&display=swap" rel="stylesheet">
+              <link rel="stylesheet" href="style.css">
+          </head>
+          <body>
+              <div id="historyContainer" class = "results">
+                  ${historyData}
+
+              </div>
+          </body>
+      </html>
+  `;
+  */

@@ -1,6 +1,17 @@
 // Setup empty JS object to act as endpoint for all routes
-// projectData = {};
-projectData = {date: "06.09.2021", temperature: 33, feelings: "hot" };
+projectData = {};
+// projectData = {date: "06.09.2021", temperature: 33, feelings: "hot" };
+
+// historyData = [];
+// populated with sample date to be able to test historty functionality
+// as max one entry is assumed per day
+historyData = [
+	{date: "06.09.2021", temperature: 33, feelings: "hot", tempMax: 33, tempMin: 24 },
+	{date: "07.09.2021", temperature: 33, feelings: "warm", tempMax: 28, tempMin: 21 },
+	{date: "08.09.2021", temperature: 33, feelings: "cold", tempMax: 22, tempMin: 19 },
+	{date: "09.09.2021", temperature: 33, feelings: "hot", tempMax: 30, tempMin: 20 },
+	{date: "10.09.2021", temperature: 33, feelings: "nice", tempMax: 28, tempMin: 19 }
+];
 
 // Require Express to run server and routes
 const express = require('express');
@@ -43,15 +54,49 @@ app.post('/updateWeather', updateWeather);
 function updateWeather(request, response) {
 	projectData = request.body;
     console.log("New Data: ", projectData);
+	// insert to history
+	addToHistory(projectData);
 	response.send(projectData);
 }
 
+app.get('/weatherHistory', getWeatherHistory);
+
+function getWeatherHistory(request, response) {
+	// console.log(projectData);
+	response.send(historyData);
+}
+
+function addToHistory(data) {
+	maxDays = 7;
+	const fetchDate = data.date;
+	console.log(`Fetch Date: ${fetchDate}`);
+	if ( isOkToAdd(fetchDate) ) {
+		if(historyData.length === maxDays) {
+			historyData.shift();  // keep max days
+		}
+		historyData.push(data);
+	}
+}
+
+function isOkToAdd(fetchDate){
+	// max one entry per day
+	for (entry of historyData) {
+		if(entry.date === fetchDate ) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+}
+
+
 /////
+/*
 app.post('/updateWeather', updateWeather);
 
 function updateWeather(request, response) {
 	projectData = request.body;
 	response.send(projectData);
 }
-
+*/
 /////
