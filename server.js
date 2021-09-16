@@ -1,6 +1,5 @@
 // Setup empty JS object to act as endpoint for all routes
 projectData = {};
-// projectData = {date: "06.09.2021", temperature: 33, feelings: "hot" };
 
 // historyData = [];
 // populated with sample date to be able to test historty functionality
@@ -62,7 +61,6 @@ function updateWeather(request, response) {
 app.get('/weatherHistory', getWeatherHistory);
 
 function getWeatherHistory(request, response) {
-	// console.log(projectData);
 	response.send(historyData);
 }
 
@@ -88,15 +86,3 @@ function isOkToAdd(fetchDate){
 		}
 	}
 }
-
-
-/////
-/*
-app.post('/updateWeather', updateWeather);
-
-function updateWeather(request, response) {
-	projectData = request.body;
-	response.send(projectData);
-}
-*/
-/////
